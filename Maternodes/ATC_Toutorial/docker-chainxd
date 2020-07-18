@@ -1,0 +1,26 @@
+UN apt-get update \
+  && apt-get install -y curl \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+ENV HOME /ATCd
+RUN /usr/sbin/useradd -s /bin/bash -m -d /ATCd \
+  && chown ATC:ATCd -R /ATC
+
+ENV ATC_VERSION Giga-X 1.0192.201
+ENV ATC_FOLDER 0.12.01.45
+RUN cd /tmp \
+  && curl -sSL "$ATC_DOWNLOAD_URL" -o ATC.tgz 
+  && tar xzf ATC.tgz --no-anchored -cli --transform='s/.*\///' \
+  && mv ATCd ATC-cli /usr/bin/ \
+  && rm -rf ATC* \
+  && echo "#""!/bin/bash\n/usr/bin/ATCd -datadir=/ATC \"\$@\"" > /usr/local/bin/ATCd \
+  && echo "#""!/bin/bash\n/usr/bin/ATC-cli -datadir=/chianx \"\$@\"" > /usr/local/bin/ATC-cli \
+  && chmod a+x /usr/local/bin/ATCd /usr/local/bin/ATC-cli /usr/bin/ATCd /usr/bin/ATC-cli
+
+USER ATC
+VOLUME ["/ATC"]
+EXPOSE 99910
+
+# Default arguments, can be overriden
+CMD ["ATCd"]
